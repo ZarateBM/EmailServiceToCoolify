@@ -1,0 +1,35 @@
+services:
+  mailserver:
+    image: docker.io/mailserver/docker-mailserver:latest
+    container_name: mailserver
+    hostname: ${OVERRIDE_HOSTNAME}  # Usa la variable de entorno
+    domainname: ${DMS_DOMAIN}       # Usa la variable de entorno
+    env_file: .env                  # Cargar variables desde .env
+    ports:
+      - "25:25"                     # SMTP sin cifrado
+      - "465:465"                   # SMTP con SSL/TLS
+      - "143:143"                   # IMAP sin cifrado
+      - "993:993"                   # IMAP con SSL/TLS
+    volumes:
+      - ./maildata:/var/mail
+      - ./mailstate:/var/mail-state
+      - ./config:/tmp/docker-mailserver
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+
+  roundcube:
+    image: roundcube/roundcubemail:latest
+    container_name: roundcube
+    depends_on:
+      - mailserver
+    environment:
+      - ROUNDCUBEMAIL_DEFAULT_HOST=${ROUNDCUBEMAIL_DEFAULT_HOST}
+      - ROUNDCUBEMAIL_SMTP_SERVER=${ROUNDCUBEMAIL_SMTP_SERVER}
+      - ROUNDCUBEMAIL_IMAP_SERVER=${ROUNDCUBEMAIL_IMAP_SERVER}
+    ports:
+      - "8888:80"
+    volumes:
+      - ./roundcube/config:/var/www/html/config
+    restart: unless-stopped
