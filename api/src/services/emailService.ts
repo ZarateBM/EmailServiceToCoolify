@@ -5,7 +5,7 @@ import util from 'util';
 const execPromise = util.promisify(exec);
 
 export const createNewEmail = async (email: string, password: string , containerName:string): Promise<string> => {
-  const scriptPath = "./create_email.sh"; // Ruta al script `expect`
+  const scriptPath = "./services/create_email.sh"; // Ruta al script `expect`
 
   try {
     await execPromise(`bash ${scriptPath} ${containerName} ${email} ${password}`);
