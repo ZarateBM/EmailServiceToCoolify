@@ -14,6 +14,7 @@ services:
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state
       - ./config:/tmp/docker-mailserver
+      - ./config/setup.sh:/usr/local/bin/setup.sh
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
@@ -45,3 +46,4 @@ services:
     depends_on:
       - mailserver
     restart: unless-stopped
+
