@@ -19,4 +19,3 @@ EXPOSE 5587
 # Comando para iniciar la API
 CMD ["node", "dist/index.js"]
 
-RUN apt-get update && apt-get install -y expect

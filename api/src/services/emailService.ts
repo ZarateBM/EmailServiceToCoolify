@@ -1,21 +1,32 @@
 
 import fs from 'fs';
-import { exec } from "child_process";
-import util from "util";
-import path from "path";
 
-const execPromise = util.promisify(exec);
+import { spawn } from "child_process";
 
 export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
-  const scriptPath = path.resolve(__dirname, "create_email.sh"); // Ruta al script
+  return new Promise((resolve, reject) => {
+    const process = spawn("docker", ["exec", "-it", containerName, "setup", "email", "add", email]);
 
-  try {
-    await execPromise(`bash ${scriptPath} ${containerName} ${email} ${password}`);
-    return `Correo ${email} creado correctamente.`;
-  } catch (error) {
-    console.error(`Error al crear el correo: ${error}`);
-    throw new Error(`No se pudo crear el correo ${email}.`);
-  }
+    process.stdout.on("data", (data) => {
+      const output = data.toString();
+      if (output.includes("Enter Password:")) {
+        process.stdin.write(`${password}\n`);
+      }
+    });
+
+    process.stderr.on("data", (data) => {
+      console.error(`Error: ${data.toString()}`);
+      reject(new Error(data.toString()));
+    });
+
+    process.on("close", (code) => {
+      if (code === 0) {
+        resolve(`Correo ${email} creado correctamente.`);
+      } else {
+        reject(new Error(`No se pudo crear el correo ${email}.`));
+      }
+    });
+  });
 };
 
 
