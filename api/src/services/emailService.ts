@@ -1,7 +1,12 @@
 
 import fs from 'fs';
-
+import { exec } from "child_process";
+import util from "util";
 import { spawn } from "child_process";
+
+const execPromise = util.promisify(exec);
+
+
 
 export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
   return new Promise((resolve, reject) => {
