@@ -1,39 +1,51 @@
 
 import fs from 'fs';
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 import util from "util";
-import { spawn } from "child_process";
+import path from "path";
 
 const execPromise = util.promisify(exec);
 
-
-
 export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const process = spawn("docker", ["exec", "-it", containerName, "setup", "email", "add", email]);
+    // Ejecutar el comando de Docker dentro del contenedor
+    const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email]);
 
+    // Capturar y manejar la salida estándar
     process.stdout.on("data", (data) => {
       const output = data.toString();
+      console.log(`STDOUT: ${output}`); // Registrar la salida para depuración
+
       if (output.includes("Enter Password:")) {
+        console.log("Enviando contraseña...");
         process.stdin.write(`${password}\n`);
       }
     });
 
-    process.stderr.on("data", (data) => {
-      console.error(`Error: ${data.toString()}`);
-      reject(new Error(data.toString()));
+    // Capturar y manejar los errores estándar
+    process.stderr.on("data", (data: Buffer) => {
+      console.error(`STDERR: ${data.toString()}`); // Registrar errores
+      reject(new Error(`Error al ejecutar el comando: ${data.toString()}`));
     });
 
-    process.on("close", (code) => {
+    // Escuchar el evento de cierre del proceso
+    process.on("close", (code: number) => {
       if (code === 0) {
+        console.log(`Proceso finalizado con éxito (código: ${code})`);
         resolve(`Correo ${email} creado correctamente.`);
       } else {
-        reject(new Error(`No se pudo crear el correo ${email}.`));
+        console.error(`Proceso finalizado con error (código: ${code})`);
+        reject(new Error(`No se pudo crear el correo ${email}. Código de salida: ${code}`));
       }
+    });
+
+    // Manejar errores en el proceso
+    process.on("error", (err: Error) => {
+      console.error(`Error en el proceso: ${err.message}`);
+      reject(new Error(`Error en el proceso: ${err.message}`));
     });
   });
 };
-
 
 // Actualizar contraseña
 export const updateEmailPassword = async (email: string, password: string): Promise<string> => {
