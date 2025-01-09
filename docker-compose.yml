@@ -2,13 +2,12 @@ services:
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
     container_name: mailserver
-    hostname: ${OVERRIDE_HOSTNAME}  # Nombre del servidor (desde .env)
-    domainname: ${DMS_DOMAIN}       # Dominio del correo (desde .env)
-    env_file: .env                  # Variables de entorno desde .env
+    hostname: ${OVERRIDE_HOSTNAME}  # Usa la variable de entorno
+    domainname: ${DMS_DOMAIN}       # Usa la variable de entorno
+    env_file: .env                  # Cargar variables desde .env
     ports:
       - "25:25"                     # SMTP sin cifrado
       - "465:465"                   # SMTP con SSL/TLS
-      - "587:587"                   # SMTP STARTTLS
       - "143:143"                   # IMAP sin cifrado
       - "993:993"                   # IMAP con SSL/TLS
     volumes:
