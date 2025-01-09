@@ -45,3 +45,12 @@ services:
     depends_on:
       - mailserver
     restart: unless-stopped
+
+  executor:
+    image: alpine:latest
+    container_name: executor
+    volumes:
+      - ./config:/config
+    entrypoint: /bin/sh
+    depends_on:
+      - mailserver
