@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.listEmails = exports.deleteEmail = exports.updatePassword = exports.createEmail = void 0;
 const emailService_1 = require("../services/emailService");
 const createEmail = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, containerName } = req.body;
     try {
-        const result = await (0, emailService_1.createNewEmail)(email, password);
+        const result = await (0, emailService_1.createNewEmail)(email, password, containerName);
         res.status(201).json({ message: result });
     }
     catch (error) {
