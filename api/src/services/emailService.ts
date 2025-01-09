@@ -6,7 +6,7 @@ const execPromise = util.promisify(exec);
 
 // Crear un nuevo correo
 export const createNewEmail = async (email: string, password: string): Promise<string> => {
-  const command = `./setup.sh email add ${email} --password ${password}`;
+  const command = `setup.sh email add ${email} --password ${password}`;
   await execPromise(command);
   return `Correo ${email} creado correctamente.`;
 };
@@ -27,6 +27,12 @@ export const deleteExistingEmail = async (email: string): Promise<string> => {
 
 // Listar todos los correos
 export const getAllEmails = async (): Promise<string[]> => {
+  const accountsFile = '/path/to/config/postfix-accounts.cf';
+  const data = fs.readFileSync(accountsFile, 'utf-8');
+  return data.split('\n').filter(line => line.trim() !== '').map(line => line.split('|')[0]);
+};
+
+export const testhelp = async (): Promise<string[]> => {
   const accountsFile = '/path/to/config/postfix-accounts.cf';
   const data = fs.readFileSync(accountsFile, 'utf-8');
   return data.split('\n').filter(line => line.trim() !== '').map(line => line.split('|')[0]);
