@@ -1,11 +1,13 @@
-import { exec } from 'child_process';
+
 import fs from 'fs';
-import util from 'util';
+import { exec } from "child_process";
+import util from "util";
+import path from "path";
 
 const execPromise = util.promisify(exec);
 
-export const createNewEmail = async (email: string, password: string , containerName:string): Promise<string> => {
-  const scriptPath = "./services/create_email.sh"; // Ruta al script `expect`
+export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
+  const scriptPath = path.resolve(__dirname, "services/create_email.sh"); // Ruta al script
 
   try {
     await execPromise(`bash ${scriptPath} ${containerName} ${email} ${password}`);
@@ -15,6 +17,7 @@ export const createNewEmail = async (email: string, password: string , container
     throw new Error(`No se pudo crear el correo ${email}.`);
   }
 };
+
 
 // Actualizar contraseña
 export const updateEmailPassword = async (email: string, password: string): Promise<string> => {
