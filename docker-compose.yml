@@ -42,6 +42,7 @@ services:
       - "5587:3000"
     volumes:
       - ./config:/config
+       - /var/run/docker.sock:/var/run/docker.sock # Montar el socket de Docker
     depends_on:
       - mailserver
     restart: unless-stopped
