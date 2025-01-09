@@ -15,7 +15,6 @@ services:
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state
       - ./config:/tmp/docker-mailserver
-      - /etc/letsencrypt:/etc/letsencrypt:ro  # Montar certificados de Let's Encrypt
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
@@ -34,4 +33,16 @@ services:
       - "8888:80"
     volumes:
       - ./roundcube/config:/var/www/html/config
+    restart: unless-stopped
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: email-api
+    ports:
+      - "5587:3000"
+    volumes:
+      - ./config:/config
+    depends_on:
+      - mailserver
     restart: unless-stopped
