@@ -6,7 +6,7 @@ const execPromise = util.promisify(exec);
 
 // Crear un nuevo correo
 export const createNewEmail = async (email: string, password: string): Promise<string> => {
-  const command = `setup.sh email add ${email} --password ${password}`;
+  const command = `setup email add ${email} --password ${password}`;
   await execPromise(command);
   return `Correo ${email} creado correctamente.`;
 };
