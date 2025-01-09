@@ -1,15 +1,17 @@
 services:
   mailserver:
-    image: docker.io/mailserver/docker-mailserver:latest
+    build:
+      context: ./mail  # Ruta donde estará el Dockerfile de mailserver
     container_name: mailserver
-    hostname: ${OVERRIDE_HOSTNAME}  # Usa la variable de entorno
-    domainname: ${DMS_DOMAIN}       # Usa la variable de entorno
-    env_file: .env                  # Cargar variables desde .env
+    hostname: ${OVERRIDE_HOSTNAME}
+    domainname: ${DMS_DOMAIN}
+    env_file: .env
     ports:
-      - "25:25"                     # SMTP sin cifrado
-      - "465:465"                   # SMTP con SSL/TLS
-      - "143:143"                   # IMAP sin cifrado
-      - "993:993"                   # IMAP con SSL/TLS
+      - "25:25"
+      - "465:465"
+      - "143:143"
+      - "993:993"
+      - "5000:5000"  # Puerto para la API Proxy
     volumes:
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state
@@ -33,6 +35,7 @@ services:
     volumes:
       - ./roundcube/config:/var/www/html/config
     restart: unless-stopped
+
   api:
     build:
       context: ./api
@@ -42,8 +45,6 @@ services:
       - "5587:3000"
     volumes:
       - ./config:/config
-       - /var/run/docker.sock:/var/run/docker.sock # Montar el socket de Docker
     depends_on:
       - mailserver
     restart: unless-stopped
-
