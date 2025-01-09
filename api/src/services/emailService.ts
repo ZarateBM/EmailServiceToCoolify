@@ -4,16 +4,15 @@ import util from 'util';
 
 const execPromise = util.promisify(exec);
 
-// Crear un nuevo correo
-export const createNewEmail = async (email: string, password: string): Promise<string> => {
-  const containerName = 'mailserver-xg0gwco08g000g0k0kw8g0k0-095522042644'; 
-  const command = `docker exec ${containerName} setup email add ${email} --password ${password}`;
-  
+export const createNewEmail = async (email: string, password: string , containerName:string): Promise<string> => {
+  const scriptPath = "./create_email.sh"; // Ruta al script `expect`
+
   try {
-    const { stdout } = await execPromise(command);
-    return `Correo ${email} creado correctamente.\nSalida: ${stdout}`;
+    await execPromise(`bash ${scriptPath} ${containerName} ${email} ${password}`);
+    return `Correo ${email} creado correctamente.`;
   } catch (error) {
-    throw new Error(`Error al crear el correo ${email}: ${error}`);
+    console.error(`Error al crear el correo: ${error}`);
+    throw new Error(`No se pudo crear el correo ${email}.`);
   }
 };
 
