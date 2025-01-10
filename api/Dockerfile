@@ -1,4 +1,11 @@
+# Usa la imagen base de Node.js
 FROM node:22
+
+# Instalar dependencias necesarias para Docker
+RUN apt-get update && \
+    apt-get install -y \
+    docker.io && \
+    rm -rf /var/lib/apt/lists/*
 
 # Crear el directorio de trabajo
 WORKDIR /usr/src/app
@@ -18,4 +25,3 @@ EXPOSE 5587
 
 # Comando para iniciar la API
 CMD ["node", "dist/index.js"]
-
