@@ -1,6 +1,23 @@
 import { spawn } from "child_process";
 const containerName = "mailserver-xg0gwco08g000g0k0kw8g0k0";
 
+const parseErrorMessage = (output: string): string => {
+  const errorLines = output.split("\n").filter((line) => line.includes("ERROR"));
+
+  if (errorLines.length === 0) {
+    return output.trim();
+  }
+
+  // Extrae y formatea los mensajes de error
+  const formattedErrors = errorLines.map((line) => {
+    const [timestamp, error] = line.split("ERROR");
+    return error.trim();
+  });
+
+  return formattedErrors.join("; "); // Devuelve los errores concatenados
+};
+
+
 // Crear un nuevo correo electrónico
 export const createNewEmailService = async (email: string, password: string,): Promise<string> => {
   return executeCommand(["setup", "email", "add", email, password], containerName, `Correo ${email} creado correctamente.`);
@@ -105,12 +122,16 @@ const executeCommand = async (args: string[], containerName: string, successMess
     process.on("close", (code: number) => {
       console.log(`El proceso ha finalizado con código: ${code}`);
       if (code === 0) {
-        console.log(successMessage);
-        resolve(outputBuffer.trim());
-      } else {
+        const message = outputBuffer.trim() || "Proceso completado exitosamente.";
+        console.log(message);
+        resolve(message);
+      } 
+      // Caso de error
+      else {
+        const errorMessage = parseErrorMessage(outputBuffer);
         console.error(`Error al ejecutar el comando. Código de salida: ${code}`);
         console.error(`Salida del proceso:\n${outputBuffer}`);
-        reject(new Error(`Error al ejecutar el comando. Código de salida: ${code}\nOutput:\n${outputBuffer}`));
+        reject(new Error(`Error: ${errorMessage}`));
       }
     });
 
