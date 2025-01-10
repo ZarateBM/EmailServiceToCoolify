@@ -2,11 +2,11 @@ import e, { Request, Response } from 'express';
 import { createNewEmail, updateEmailPassword, deleteExistingEmail, getAllEmails } from '../services/emailService';
 
 export const createEmail = async (req: Request, res: Response) => {
-  const { email, password , containerName} = req.body;
+  const { email, password } = req.body;
   try {
-    const result = await createNewEmail(email, password , containerName);
+    const result = await createNewEmail(email, password );
     res.status(201).json({ message: result });
-  } catch (error) {
+  } catch (error) { 
     if(error instanceof Error) {
     res.status(500).json({ error: error.message });
     }else{
