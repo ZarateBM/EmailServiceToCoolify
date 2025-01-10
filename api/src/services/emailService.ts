@@ -6,26 +6,21 @@ import path from "path";
 
 const execPromise = util.promisify(exec);
 
+
 export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     console.log(`Iniciando el proceso para crear el correo: ${email}`);
 
-    // Ejecutar el comando de Docker dentro del contenedor
-    const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email]);
+    // Ejecutar el comando de Docker dentro del contenedor, enviando la contraseña directamente como argumento
+    const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email, password]);
 
-    let outputBuffer = ""; // Para acumular la salida y analizarla
+    let outputBuffer = ""; // Para acumular la salida para depuración
 
     // Capturar y manejar la salida estándar
     process.stdout.on("data", (data) => {
       const output = data.toString();
-      outputBuffer += output; // Acumular la salida para depuración
+      outputBuffer += output; // Acumular salida para análisis
       console.log(`STDOUT: ${output}`); // Mostrar la salida en tiempo real
-
-      // Detectar cuando la consola pide la contraseña
-      if (output.includes("")) {
-        console.log("Consola solicita la contraseña, enviándola...");
-        process.stdin.write(`${password}\n`); // Enviar la contraseña
-      }
     });
 
     // Capturar y manejar los errores estándar
@@ -42,6 +37,7 @@ export const createNewEmail = async (email: string, password: string, containerN
         resolve(`Correo ${email} creado correctamente.`);
       } else {
         console.error(`No se pudo crear el correo ${email}. Código de salida: ${code}`);
+        console.error(`Salida del proceso:\n${outputBuffer}`);
         reject(new Error(`No se pudo crear el correo ${email}. Código de salida: ${code}\nOutput:\n${outputBuffer}`));
       }
     });
@@ -51,15 +47,6 @@ export const createNewEmail = async (email: string, password: string, containerN
       console.error(`Error en el proceso: ${err.message}`);
       reject(new Error(`Error en el proceso: ${err.message}`));
     });
-
-    // Tiempo de espera máximo (opcional)
-    setTimeout(() => {
-      if (process.exitCode === null) {
-        console.error("El proceso tardó demasiado tiempo. Matándolo...");
-        process.kill();
-        reject(new Error("El proceso tardó demasiado tiempo y fue terminado."));
-      }
-    }, 10000); // 10 segundos de espera como máximo
   });
 };
 
