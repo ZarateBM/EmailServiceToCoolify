@@ -1,12 +1,18 @@
 # Usa la imagen oficial de docker-mailserver como base
 FROM docker.io/mailserver/docker-mailserver:latest
 
-# Instalar Python y dependencias necesarias en Alpine
-RUN apk add --no-cache \
+# Cambia el entorno a bash (necesario para algunos scripts)
+SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
+
+# Instalar Python y dependencias necesarias
+RUN apt-get update && \
+    apt-get install -y \
     python3 \
-    py3-pip \
+    python3-pip \
     curl && \
-    pip3 install flask
+    pip3 install flask && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Descargar y configurar el script setup.sh
 RUN curl -o /usr/local/bin/setup -L https://raw.githubusercontent.com/docker-mailserver/docker-mailserver/master/setup.sh && \
