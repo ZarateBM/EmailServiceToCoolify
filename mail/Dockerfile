@@ -1,13 +1,16 @@
-FROM docker.io/mailserver/docker-mailserver:latest
+FROM python:3.9-alpine
 
-# Instalar Python y Flask en Alpine
-RUN apk add --no-cache python3 py3-pip && pip3 install flask
+# Instalar mailserver manualmente
+RUN apk add --no-cache bash supervisor
+# Copiar e instalar mailserver aquí si es necesario
 
 # Copiar el script de la API Proxy
 COPY server.py /usr/local/bin/server.py
 
+# Instalar Flask
+RUN pip3 install flask
+
 # Exponer el puerto de la API Proxy
 EXPOSE 5000
 
-# Ejecutar el servidor de Flask al iniciar el contenedor
-CMD ["bash", "-c", "supervisord & python3 /usr/local/bin/server.py"]
+CMD ["python3", "/usr/local/bin/server.py"]
