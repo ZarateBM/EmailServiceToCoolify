@@ -4,7 +4,9 @@ services:
     container_name: mailserver
     hostname: ${OVERRIDE_HOSTNAME}  
     domainname: ${DMS_DOMAIN}      
-    env_file: .env                  
+    env_file: .env       
+    environment:
+      - SSL_TYPE=letsencrypt        
     ports:
       - "25:25"                     
       - "465:465"                 
@@ -14,6 +16,7 @@ services:
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state
       - ./config:/tmp/docker-mailserver
+       - /etc/letsencrypt:/etc/letsencrypt:ro # Volumen de Let's Encrypt
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
