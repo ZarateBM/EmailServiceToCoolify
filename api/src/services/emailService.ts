@@ -11,7 +11,7 @@ export const createNewEmail = async (email: string, password: string, containerN
     console.log(`Iniciando el proceso para crear el correo: ${email}`);
 
     // Ejecutar el comando de Docker dentro del contenedor
-    const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email]);
+    const process = spawn("docker", ["exec", "-ti", containerName, "setup", "email", "add", email]);
 
     let outputBuffer = ""; // Para acumular la salida y analizarla
 
