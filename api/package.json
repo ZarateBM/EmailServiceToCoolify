@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn src/index.ts",
-    "build": "tsc"
+    "build": "tsc && copyfiles -u 1 src/services/create_email.sh dist/"
   },
   "keywords": [],
   "author": "",

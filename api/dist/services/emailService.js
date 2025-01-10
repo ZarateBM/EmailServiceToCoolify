@@ -4,20 +4,60 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.testhelp = exports.getAllEmails = exports.deleteExistingEmail = exports.updateEmailPassword = exports.createNewEmail = void 0;
-const fs_1 = __importDefault(require("fs"));
 const child_process_1 = require("child_process");
 const util_1 = __importDefault(require("util"));
+const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const execPromise = util_1.default.promisify(child_process_1.exec);
+// Ruta del script de expect temporal
+const EXPECT_SCRIPT_PATH = path_1.default.join(__dirname, "create_email_expect.sh");
+// Función para generar dinámicamente el script de expect
+const generateExpectScript = (containerName, email, password) => {
+    return `#!/usr/bin/expect -f
+
+set containerName [lindex $argv 0]
+set email [lindex $argv 1]
+set password [lindex $argv 2]
+
+spawn docker exec -it $containerName setup email add $email
+expect "Enter Password:"
+send "$password\\r"
+expect eof
+`;
+};
+// Función para crear un correo electrónico
 const createNewEmail = async (email, password, containerName) => {
-    const scriptPath = path_1.default.resolve(__dirname, "create_email.sh"); // Ruta al script
+    console.log(`Creando correo ${email}...`);
+    // Generar el script de expect dinámicamente
+    const scriptContent = generateExpectScript(containerName, email, password);
+    // Guardar el script en un archivo temporal
+    fs_1.default.writeFileSync(EXPECT_SCRIPT_PATH, scriptContent, { mode: 0o755 }); // Dar permisos de ejecución al archivo
     try {
-        await execPromise(`bash ${scriptPath} ${containerName} ${email} ${password}`);
+        // Ejecutar el script de expect
+        const { stdout, stderr } = await execPromise(`expect ${EXPECT_SCRIPT_PATH} ${containerName} ${email} ${password}`);
+        // Registrar la salida para depuración
+        if (stderr) {
+            console.error(`Error: ${stderr}`);
+            throw new Error(stderr);
+        }
+        console.log(`STDOUT: ${stdout}`);
         return `Correo ${email} creado correctamente.`;
     }
     catch (error) {
-        console.error(`Error al crear el correo: ${error}`);
+        if (error instanceof Error) {
+            console.error(`Error al crear el correo: ${error.message}`);
+            throw new Error(`No se pudo crear el correo ${email}.`);
+        }
+        else {
+            console.error(`Error insesperado: ${error}`);
+        }
         throw new Error(`No se pudo crear el correo ${email}.`);
+    }
+    finally {
+        // Eliminar el archivo temporal del script de expect
+        if (fs_1.default.existsSync(EXPECT_SCRIPT_PATH)) {
+            fs_1.default.unlinkSync(EXPECT_SCRIPT_PATH);
+        }
     }
 };
 exports.createNewEmail = createNewEmail;
