@@ -1,50 +1,64 @@
-
-import fs from 'fs';
 import { exec, spawn } from "child_process";
 import util from "util";
+import fs from "fs";
 import path from "path";
 
 const execPromise = util.promisify(exec);
 
+// Ruta del script de expect temporal
+const EXPECT_SCRIPT_PATH = path.join(__dirname, "create_email_expect.sh");
+
+// Función para generar dinámicamente el script de expect
+const generateExpectScript = (containerName: string, email: string, password: string): string => {
+  return `#!/usr/bin/expect -f
+
+set containerName [lindex $argv 0]
+set email [lindex $argv 1]
+set password [lindex $argv 2]
+
+spawn docker exec -it $containerName setup email add $email
+expect "Enter Password:"
+send "$password\\r"
+expect eof
+`;
+};
+
+// Función para crear un correo electrónico
 export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    // Ejecutar el comando de Docker dentro del contenedor
-    const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email]);
+  console.log(`Creando correo ${email}...`);
 
-    // Capturar y manejar la salida estándar
-    process.stdout.on("data", (data) => {
-      const output = data.toString();
-      console.log(`STDOUT: ${output}`); // Registrar la salida para depuración
+  // Generar el script de expect dinámicamente
+  const scriptContent = generateExpectScript(containerName, email, password);
 
-      if (output.includes("Enter Password:")) {
-        console.log("Enviando contraseña...");
-        process.stdin.write(`${password}\n`);
-      }
-    });
+  // Guardar el script en un archivo temporal
+  fs.writeFileSync(EXPECT_SCRIPT_PATH, scriptContent, { mode: 0o755 }); // Dar permisos de ejecución al archivo
 
-    // Capturar y manejar los errores estándar
-    process.stderr.on("data", (data: Buffer) => {
-      console.error(`STDERR: ${data.toString()}`); // Registrar errores
-      reject(new Error(`Error al ejecutar el comando: ${data.toString()}`));
-    });
+  try {
+    // Ejecutar el script de expect
+    const { stdout, stderr } = await execPromise(`expect ${EXPECT_SCRIPT_PATH} ${containerName} ${email} ${password}`);
 
-    // Escuchar el evento de cierre del proceso
-    process.on("close", (code: number) => {
-      if (code === 0) {
-        console.log(`Proceso finalizado con éxito (código: ${code})`);
-        resolve(`Correo ${email} creado correctamente.`);
-      } else {
-        console.error(`Proceso finalizado con error (código: ${code})`);
-        reject(new Error(`No se pudo crear el correo ${email}. Código de salida: ${code}`));
-      }
-    });
+    // Registrar la salida para depuración
+    if (stderr) {
+      console.error(`Error: ${stderr}`);
+      throw new Error(stderr);
+    }
 
-    // Manejar errores en el proceso
-    process.on("error", (err: Error) => {
-      console.error(`Error en el proceso: ${err.message}`);
-      reject(new Error(`Error en el proceso: ${err.message}`));
-    });
-  });
+    console.log(`STDOUT: ${stdout}`);
+    return `Correo ${email} creado correctamente.`;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`Error al crear el correo: ${error.message}`);
+      throw new Error(`No se pudo crear el correo ${email}.`);
+    } else {
+      console.error(`Error insesperado: ${error}`);
+    }
+    throw new Error(`No se pudo crear el correo ${email}.`);
+  } finally {
+    // Eliminar el archivo temporal del script de expect
+    if (fs.existsSync(EXPECT_SCRIPT_PATH)) {
+      fs.unlinkSync(EXPECT_SCRIPT_PATH);
+    }
+  }
 };
 
 // Actualizar contraseña
