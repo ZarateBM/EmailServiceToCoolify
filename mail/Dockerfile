@@ -1,7 +1,7 @@
 FROM docker.io/mailserver/docker-mailserver:latest
 
-# Instalar Python y Flask
-RUN apt-get update && apt-get install -y python3 python3-pip && pip3 install flask
+# Instalar Python y Flask en Alpine
+RUN apk add --no-cache python3 py3-pip && pip3 install flask
 
 # Copiar el script de la API Proxy
 COPY server.py /usr/local/bin/server.py
