@@ -33,8 +33,8 @@ router.delete('/emails/:email', deleteEmail);
 router.get('/emails', listEmails); 
 
 
-router.post('/emails/alias', addAlias); 
-router.delete('/emails/alias', deleteAlias); 
+router.post('/emails/alias/', addAlias); 
+router.delete('/emails/alias/', deleteAlias); 
 
 
 router.post('/emails/quota', setQuota); 
@@ -42,7 +42,6 @@ router.delete('/emails/quota', deleteQuota);
 
 
 router.post('/config/dkim', configureDKIM); 
-
 
 router.post('/relay/auth', addRelayAuth); 
 router.post('/relay/domain', addRelayDomain); 
@@ -58,9 +57,9 @@ router.get('/fail2ban/status', fail2BanStatus);
 router.post('/debug', debugCommand);
 
 
-router.post('/dovecot-master/add', addDovecotMasterUser as RequestHandler); 
-router.post('/dovecot-master/update', updateDovecotMasterUser as RequestHandler); 
-router.post('/dovecot-master/delete', deleteDovecotMasterUser as RequestHandler); 
-router.get('/dovecot-master/list', listDovecotMasterUsers); 
+router.post('/dovecot-master', addDovecotMasterUser as RequestHandler); 
+router.put('/dovecot-master/', updateDovecotMasterUser as RequestHandler); 
+router.post('/dovecot-master/', deleteDovecotMasterUser as RequestHandler); 
+router.get('/dovecot-master/', listDovecotMasterUsers); 
 
 export default router;
