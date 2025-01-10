@@ -11,7 +11,7 @@ export const createNewEmail = async (email: string, password: string, containerN
     console.log(`Iniciando el proceso para crear el correo: ${email}`);
 
     // Ejecutar el comando de Docker dentro del contenedor
-    const process = spawn("docker", ["exec", "-ti", containerName, "setup", "email", "add", email]);
+    const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email]);
 
     let outputBuffer = ""; // Para acumular la salida y analizarla
 
@@ -22,7 +22,7 @@ export const createNewEmail = async (email: string, password: string, containerN
       console.log(`STDOUT: ${output}`); // Mostrar la salida en tiempo real
 
       // Detectar cuando la consola pide la contraseña
-      if (output.includes("Enter Password:")) {
+      if (output.includes("")) {
         console.log("Consola solicita la contraseña, enviándola...");
         process.stdin.write(`${password}\n`); // Enviar la contraseña
       }
