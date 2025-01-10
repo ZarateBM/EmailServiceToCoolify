@@ -9,17 +9,17 @@ const execPromise = util.promisify(exec);
 export const createNewEmail = async (email: string, password: string, containerName: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     console.log(`Iniciando el proceso para crear el correo: ${email}`);
-    
+
     // Ejecutar el comando de Docker dentro del contenedor
     const process = spawn("docker", ["exec", "-i", containerName, "setup", "email", "add", email]);
 
-    let outputBuffer = ""; // Para capturar la salida y analizarla
+    let outputBuffer = ""; // Para acumular la salida y analizarla
 
     // Capturar y manejar la salida estándar
     process.stdout.on("data", (data) => {
       const output = data.toString();
-      outputBuffer += output;
-      console.log(`STDOUT: ${output}`); // Registrar la salida para depuración
+      outputBuffer += output; // Acumular la salida para depuración
+      console.log(`STDOUT: ${output}`); // Mostrar la salida en tiempo real
 
       // Detectar cuando la consola pide la contraseña
       if (output.includes("Enter Password:")) {
@@ -30,8 +30,8 @@ export const createNewEmail = async (email: string, password: string, containerN
 
     // Capturar y manejar los errores estándar
     process.stderr.on("data", (data: Buffer) => {
-      console.error(`STDERR: ${data.toString()}`); // Registrar errores
-      reject(new Error(`Error al ejecutar el comando: ${data.toString()}`));
+      const errorOutput = data.toString();
+      console.error(`STDERR: ${errorOutput}`); // Mostrar errores en tiempo real
     });
 
     // Escuchar el evento de cierre del proceso
@@ -42,7 +42,7 @@ export const createNewEmail = async (email: string, password: string, containerN
         resolve(`Correo ${email} creado correctamente.`);
       } else {
         console.error(`No se pudo crear el correo ${email}. Código de salida: ${code}`);
-        reject(new Error(`No se pudo crear el correo ${email}. Código de salida: ${code}`));
+        reject(new Error(`No se pudo crear el correo ${email}. Código de salida: ${code}\nOutput:\n${outputBuffer}`));
       }
     });
 
@@ -51,6 +51,15 @@ export const createNewEmail = async (email: string, password: string, containerN
       console.error(`Error en el proceso: ${err.message}`);
       reject(new Error(`Error en el proceso: ${err.message}`));
     });
+
+    // Tiempo de espera máximo (opcional)
+    setTimeout(() => {
+      if (process.exitCode === null) {
+        console.error("El proceso tardó demasiado tiempo. Matándolo...");
+        process.kill();
+        reject(new Error("El proceso tardó demasiado tiempo y fue terminado."));
+      }
+    }, 10000); // 10 segundos de espera como máximo
   });
 };
 
