@@ -26,37 +26,41 @@ import { createEmail,
 
 const router = Router();
 
-router.post('/', createEmail); 
-router.put('/:email', updatePassword); 
-router.delete('/:email', deleteEmail); 
-router.get('/', listEmails);
 
-router.post('/alias', addAlias);
-router.delete('/alias', deleteAlias);
+router.post('/emails', createEmail);
+router.put('/emails/:email', updatePassword); 
+router.delete('/emails/:email', deleteEmail); 
+router.get('/emails', listEmails); 
 
-router.post('/quota', setQuota);
-router.delete('/quota', deleteQuota);
 
-router.post('/dkim', configureDKIM);
+router.post('/emails/alias', addAlias); 
+router.delete('/emails/alias', deleteAlias); 
 
-router.post('/relay/auth', addRelayAuth);
-router.post('/relay/domain', addRelayDomain);
-router.delete('/relay/domain', excludeRelayDomain);
 
-router.post('/ban-ip', banIp as RequestHandler);
-router.post('/unban-ip', unbanIp as RequestHandler);
+router.post('/emails/quota', setQuota); 
+router.delete('/emails/quota', deleteQuota); 
 
-router.get('/fail2ban/logs', fail2BanLogs);
-router.get('/fail2ban/status', fail2BanStatus);
+
+router.post('/config/dkim', configureDKIM); 
+
+
+router.post('/relay/auth', addRelayAuth); 
+router.post('/relay/domain', addRelayDomain); 
+router.delete('/relay/domain', excludeRelayDomain); 
+
+
+router.post('/fail2ban/ban-ip', banIp as RequestHandler); 
+router.post('/fail2ban/unban-ip', unbanIp as RequestHandler); 
+router.get('/fail2ban/logs', fail2BanLogs); 
+router.get('/fail2ban/status', fail2BanStatus); 
+
 
 router.post('/debug', debugCommand);
 
 
-
-
-router.post("/dovecot-master/add", addDovecotMasterUser as RequestHandler);
-router.post("/dovecot-master/update", updateDovecotMasterUser as RequestHandler);
-router.post("/dovecot-master/delete", deleteDovecotMasterUser as RequestHandler);
-router.get("/dovecot-master/list", listDovecotMasterUsers);
+router.post('/dovecot-master/add', addDovecotMasterUser as RequestHandler); 
+router.post('/dovecot-master/update', updateDovecotMasterUser as RequestHandler); 
+router.post('/dovecot-master/delete', deleteDovecotMasterUser as RequestHandler); 
+router.get('/dovecot-master/list', listDovecotMasterUsers); 
 
 export default router;
