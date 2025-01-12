@@ -4,9 +4,7 @@ services:
     container_name: mailserver
     hostname: ${OVERRIDE_HOSTNAME}  
     domainname: ${DMS_DOMAIN}      
-    env_file: .env       
-    environment:
-      - SSL_TYPE=letsencrypt        
+    env_file: .env         
     ports:
       - "25:25"                     
       - "465:465"                 
